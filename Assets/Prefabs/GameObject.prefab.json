@@ -1,0 +1,201 @@
+{
+  "typeName": "GameObject",
+  "fileID": "1981368268566585902",
+  "properties": {
+    "m_ObjectHideFlags": "0",
+    "m_CorrespondingSourceObject": null,
+    "m_PrefabInstance": null,
+    "m_PrefabAsset": null,
+    "serializedVersion": "6",
+    "m_Layer": "0",
+    "m_Name": "GameObject",
+    "m_TagString": "Untagged",
+    "m_Icon": null,
+    "m_NavMeshLayer": "0",
+    "m_StaticEditorFlags": "0",
+    "m_IsActive": "1"
+  },
+  "components": [
+    {
+      "typeName": "Transform",
+      "classID": 4,
+      "fileID": "2497137098403081992",
+      "properties": {
+        "m_ObjectHideFlags": "0",
+        "m_CorrespondingSourceObject": null,
+        "m_PrefabInstance": null,
+        "m_PrefabAsset": null,
+        "m_LocalRotation": {
+          "x": "0",
+          "y": "0",
+          "z": "0",
+          "w": "1"
+        },
+        "m_LocalPosition": {
+          "x": "0",
+          "y": "0",
+          "z": "0"
+        },
+        "m_LocalScale": {
+          "x": "1",
+          "y": "1",
+          "z": "1"
+        },
+        "m_RootOrder": "0",
+        "m_LocalEulerAnglesHint": {
+          "x": "0",
+          "y": "0",
+          "z": "0"
+        }
+      }
+    }
+  ],
+  "children": [
+    {
+      "typeName": "GameObject",
+      "fileID": "1499129671022506742",
+      "properties": {
+        "m_ObjectHideFlags": "0",
+        "m_CorrespondingSourceObject": null,
+        "m_PrefabInstance": null,
+        "m_PrefabAsset": null,
+        "serializedVersion": "6",
+        "m_Layer": "0",
+        "m_Name": "Cube",
+        "m_TagString": "Untagged",
+        "m_Icon": null,
+        "m_NavMeshLayer": "0",
+        "m_StaticEditorFlags": "0",
+        "m_IsActive": "1"
+      },
+      "components": [
+        {
+          "typeName": "Transform",
+          "classID": 4,
+          "fileID": "8345145045156654008",
+          "properties": {
+            "m_ObjectHideFlags": "0",
+            "m_CorrespondingSourceObject": null,
+            "m_PrefabInstance": null,
+            "m_PrefabAsset": null,
+            "m_LocalRotation": {
+              "x": "0",
+              "y": "0",
+              "z": "0",
+              "w": "1"
+            },
+            "m_LocalPosition": {
+              "x": "0",
+              "y": "0",
+              "z": "0"
+            },
+            "m_LocalScale": {
+              "x": "1",
+              "y": "1",
+              "z": "1"
+            },
+            "m_RootOrder": "0",
+            "m_LocalEulerAnglesHint": {
+              "x": "0",
+              "y": "0",
+              "z": "0"
+            }
+          }
+        },
+        {
+          "typeName": "MeshFilter",
+          "classID": 33,
+          "fileID": "4920596256876117636",
+          "properties": {
+            "m_ObjectHideFlags": "0",
+            "m_CorrespondingSourceObject": null,
+            "m_PrefabInstance": null,
+            "m_PrefabAsset": null,
+            "m_Mesh": {
+              "fileID": "10202",
+              "guid": "0000000000000000e000000000000000",
+              "type": "0"
+            }
+          }
+        },
+        {
+          "typeName": "MeshRenderer",
+          "classID": 23,
+          "fileID": "3043700246418831979",
+          "properties": {
+            "m_ObjectHideFlags": "0",
+            "m_CorrespondingSourceObject": null,
+            "m_PrefabInstance": null,
+            "m_PrefabAsset": null,
+            "m_Enabled": "1",
+            "m_CastShadows": "1",
+            "m_ReceiveShadows": "1",
+            "m_DynamicOccludee": "1",
+            "m_MotionVectors": "1",
+            "m_LightProbeUsage": "1",
+            "m_ReflectionProbeUsage": "1",
+            "m_RayTracingMode": "2",
+            "m_RayTraceProcedural": "0",
+            "m_RenderingLayerMask": "1",
+            "m_RendererPriority": "0",
+            "m_Materials": [
+              {
+                "fileID": "10303",
+                "guid": "0000000000000000f000000000000000",
+                "type": "0"
+              }
+            ],
+            "m_StaticBatchInfo": {
+              "firstSubMesh": "0",
+              "subMeshCount": "0"
+            },
+            "m_StaticBatchRoot": null,
+            "m_ProbeAnchor": null,
+            "m_LightProbeVolumeOverride": null,
+            "m_ScaleInLightmap": "1",
+            "m_ReceiveGI": "1",
+            "m_PreserveUVs": "0",
+            "m_IgnoreNormalsForChartDetection": "0",
+            "m_ImportantGI": "0",
+            "m_StitchLightmapSeams": "1",
+            "m_SelectedEditorRenderState": "3",
+            "m_MinimumChartSize": "4",
+            "m_AutoUVMaxDistance": "0.5",
+            "m_AutoUVMaxAngle": "89",
+            "m_LightmapParameters": null,
+            "m_SortingLayerID": "0",
+            "m_SortingLayer": "0",
+            "m_SortingOrder": "0",
+            "m_AdditionalVertexStreams": null
+          }
+        },
+        {
+          "typeName": "BoxCollider",
+          "classID": 65,
+          "fileID": "8761485004167400984",
+          "properties": {
+            "m_ObjectHideFlags": "0",
+            "m_CorrespondingSourceObject": null,
+            "m_PrefabInstance": null,
+            "m_PrefabAsset": null,
+            "m_Material": null,
+            "m_IsTrigger": "0",
+            "m_Enabled": "1",
+            "serializedVersion": "2",
+            "m_Size": {
+              "x": "1",
+              "y": "1",
+              "z": "1"
+            },
+            "m_Center": {
+              "x": "0",
+              "y": "0",
+              "z": "0"
+            }
+          }
+        }
+      ],
+      "children": []
+    }
+  ]
+}

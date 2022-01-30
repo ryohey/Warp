@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
@@ -12,52 +13,30 @@ namespace Warp
 {
     public struct YamlChunk
     {
-        public int objectClassType;
+        // https://docs.unity3d.com/ja/2020.3/Manual/ClassIDReference.html
+        public int classID;
         public string fileID;
-        public IDictionary<string, object> attributes;
-    }
-
-    public struct Tree<T>
-    {
-        public T element;
-        public Tree<T>[] children;
-    }
-
-    public interface ITag
-    {
-        string TagName { get; }
-        IDictionary<string, string> Attributes { get; }
+        public string typeName;
+        public IDictionary<string, object> properties;
     }
 
     public interface IElement { }
 
     public struct GameObjectElement : IElement
     {
-        public IDictionary<string, object> attributes;
+        public string typeName;
+        public string fileID;
+        public IDictionary<string, object> properties;
         public IList<ComponentElement> components;
         public IList<GameObjectElement> children;
     }
 
     public struct ComponentElement : IElement
     {
-        public IDictionary<string, object> attributes;
-    }
-
-    public struct ValueOrReference<T>
-    {
-        public T value;
-        public Reference? reference;
-    }
-
-    public struct Reference
-    {
+        public string typeName;
+        public int classID;
         public string fileID;
-    }
-
-    public struct Referenceable<T>
-    {
-        public string fileID;
-        public T value;
+        public IDictionary<string, object> properties;
     }
 
     public static class Encoder
@@ -75,13 +54,14 @@ namespace Warp
                     var document = objStartRegex.Replace(chunk, string.Empty);
                     var match = objStartRegex.Match(chunk);
                     var parsed = deserializer.Deserialize<IDictionary<string, IDictionary<string, object>>>(document);
-                    var attributes = parsed.Values.First();
+                    var properties = parsed.Values.First();
 
                     return new YamlChunk
                     {
-                        objectClassType = int.Parse(match.Groups[1].Value),
+                        classID = int.Parse(match.Groups[1].Value),
                         fileID = match.Groups[2].Value,
-                        attributes = attributes
+                        typeName = parsed.Keys.First(),
+                        properties = properties
                     };
                 })
                 .ToList();
@@ -110,30 +90,46 @@ namespace Warp
             ComponentElement CreateComponentElement(string fileID)
             {
                 var chunk = documents.First(obj => obj.fileID == fileID);
+                var properties = ReplaceFileIDZero(chunk.properties);
+
+                // Associations between Components and GameObject is represented by tree structure,
+                // so we don't need these references to GameObject
+                properties.Remove("m_GameObject");
+
+                if (chunk.classID == 4)
+                {
+                    properties.Remove("m_Father");
+                    properties.Remove("m_Children");
+                }
 
                 return new ComponentElement
                 {
-                    attributes = chunk.attributes
+                    typeName = chunk.typeName,
+                    classID = chunk.classID,
+                    fileID = chunk.fileID,
+                    properties = properties
                 };
             }
 
             GameObjectElement CreateGameObjectElement(YamlChunk transform)
             {
                 var gameObject = documents
-                    .First(obj => obj.fileID == transform.attributes["m_GameObject"].GetValueAsDictionary<string>("fileID"));
+                    .First(obj => obj.fileID == transform.properties["m_GameObject"].GetValueAsDictionary<string>("fileID"));
 
                 // List of {fileID: 8345145045156654008}
-                var children = transform.attributes["m_Children"] as IList<object>;
+                var children = transform.properties["m_Children"] as IList<object>;
 
-                var attributes = new Dictionary<string, object>(gameObject.attributes);
+                var properties = new Dictionary<string, object>(gameObject.properties);
 
                 // List of {component: {fileID: 8345145045156654008}}
-                var components = attributes["m_Component"] as IList<object>;
-                attributes.Remove("m_Component");
+                var components = properties["m_Component"] as IList<object>;
+                properties.Remove("m_Component");
 
                 return new GameObjectElement
                 {
-                    attributes = attributes,
+                    typeName = gameObject.typeName,
+                    fileID = gameObject.fileID,
+                    properties = ReplaceFileIDZero(properties),
                     children = children.Select(t =>
                     {
                         var fileID = t.GetValueAsDictionary<string>("fileID");
@@ -149,14 +145,30 @@ namespace Warp
                 };
             }
 
+            IDictionary<string, object> ReplaceFileIDZero(IDictionary<string, object> dict)
+            {
+                return dict.ToDictionary(
+                    entry => entry.Key,
+                    entry =>
+                {
+                    var d = entry.Value as IDictionary<object, object>;
+                    if (d != null && d.ContainsKey("fileID") && d["fileID"] as string == "0")
+                    {
+                        return null;
+                    }
+                    return entry.Value;
+                });
+            }
+
             var rootTransform = documents
-                .Where(chunk => chunk.objectClassType == 4 && chunk.attributes["m_Father"]?.GetValueAsDictionary<string>("fileID") == "0")
+                .Where(chunk => chunk.classID == 4 && chunk.properties["m_Father"]?.GetValueAsDictionary<string>("fileID") == "0")
                 .First();
 
             var gameObjectElement = CreateGameObjectElement(rootTransform);
-            string json = JsonConvert.SerializeObject(gameObjectElement);
+            string json = JsonConvert.SerializeObject(gameObjectElement, Formatting.Indented);
 
             Debug.Log(json);
+            File.WriteAllText(prefabFilePath + ".json", json);
         }
     }
 }
