@@ -8,23 +8,37 @@ using UnityEngine;
 
 namespace Warp
 {
+    public class RenderContext
+    {
+        // fileID to Object mapping
+        public IDictionary<string, UnityEngine.Object> objectMap = new Dictionary<string, UnityEngine.Object>();
+    }
+
     public class Renderer
     {
-        public static void SpawnPrefab(string jsonPath)
+        public static RenderContext SpawnPrefab(string jsonPath)
         {
             var json = File.ReadAllText(jsonPath);
             var gameObjectElement = JsonConvert.DeserializeObject<GameObjectElement>(json);
 
-            // fileID to Object mapping
-            var objectMap = new Dictionary<string, UnityEngine.Object>();
-            Spawn(gameObjectElement, null, objectMap);
-            Update(gameObjectElement, objectMap);
+            var context = new RenderContext();
+            Spawn(gameObjectElement, null, context);
+            Update(gameObjectElement, context);
+
+            return context;
         }
 
-        public static void Spawn(GameObjectElement element, Transform parent, IDictionary<string, UnityEngine.Object> objectMap)
+        public static void UpdatePrefab(string jsonPath, RenderContext context)
+        {
+            var json = File.ReadAllText(jsonPath);
+            var gameObjectElement = JsonConvert.DeserializeObject<GameObjectElement>(json);
+            Update(gameObjectElement, context);
+        }
+
+        public static void Spawn(GameObjectElement element, Transform parent, RenderContext context)
         {
             var gameObject = new GameObject();
-            objectMap[element.fileID] = gameObject;
+            context.objectMap[element.fileID] = gameObject;
 
             if (parent != null)
             {
@@ -44,29 +58,29 @@ namespace Warp
                 {
                     throw new Exception($"Failed to create instance: {comp.typeName}");
                 }
-                objectMap[comp.fileID] = instance;
+                context.objectMap[comp.fileID] = instance;
             }
 
             foreach (var child in element.children)
             {
-                Spawn(child, gameObject.transform, objectMap);
+                Spawn(child, gameObject.transform, context);
             }
         }
 
-        public static void Update(GameObjectElement element, IDictionary<string, UnityEngine.Object> objectMap)
+        public static void Update(GameObjectElement element, RenderContext context)
         {
-            var gameObject = objectMap[element.fileID];
+            var gameObject = context.objectMap[element.fileID];
             UpdateProperties(gameObject, element.properties);
 
             foreach (var comp in element.components)
             {
-                var instance = objectMap[comp.fileID];
+                var instance = context.objectMap[comp.fileID];
                 UpdateProperties(instance, comp.properties);
             }
 
             foreach (var childElm in element.children)
             {
-                Update(childElm, objectMap);
+                Update(childElm, context);
             }
         }
 

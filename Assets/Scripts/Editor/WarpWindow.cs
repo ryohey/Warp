@@ -7,6 +7,9 @@ namespace Warp
 {
     class WarpWindow : EditorWindow
     {
+
+        private RenderContext context;
+
         [MenuItem("Warp/Edit")]
         public static void ShowWindow()
         {
@@ -22,7 +25,12 @@ namespace Warp
 
             if (GUILayout.Button("Spawn prefab"))
             {
-                Renderer.SpawnPrefab(@"Assets/Prefabs/GameObject.prefab.json");
+                context = Renderer.SpawnPrefab(@"Assets/Prefabs/GameObject.prefab.json");
+            }
+
+            if (GUILayout.Button("Update prefab") && context != null)
+            {
+                Renderer.UpdatePrefab(@"Assets/Prefabs/GameObject.prefab.json", context);
             }
         }
     }
