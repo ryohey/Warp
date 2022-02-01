@@ -19,6 +19,11 @@ namespace Warp
             {
                 Encoder.Encode(@"Assets/Prefabs/GameObject.prefab");
             }
+
+            if (GUILayout.Button("Spawn prefab"))
+            {
+                Renderer.SpawnPrefab(@"Assets/Prefabs/GameObject.prefab.json");
+            }
         }
     }
 }
