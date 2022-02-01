@@ -14,19 +14,22 @@ namespace Warp
         {
             var json = File.ReadAllText(jsonPath);
             var gameObjectElement = JsonConvert.DeserializeObject<GameObjectElement>(json);
-            Spawn(gameObjectElement, null);
+
+            // fileID to Object mapping
+            var objectMap = new Dictionary<string, UnityEngine.Object>();
+            Spawn(gameObjectElement, null, objectMap);
+            Update(gameObjectElement, objectMap);
         }
 
-        public static void Spawn(GameObjectElement element, Transform parent)
+        public static void Spawn(GameObjectElement element, Transform parent, IDictionary<string, UnityEngine.Object> objectMap)
         {
             var gameObject = new GameObject();
+            objectMap[element.fileID] = gameObject;
 
             if (parent != null)
             {
                 gameObject.transform.SetParent(parent);
             }
-
-            UpdateProperties(gameObject, element.properties);
 
             foreach (var comp in element.components)
             {
@@ -41,12 +44,29 @@ namespace Warp
                 {
                     throw new Exception($"Failed to create instance: {comp.typeName}");
                 }
-                UpdateProperties(instance, comp.properties);
+                objectMap[comp.fileID] = instance;
             }
 
             foreach (var child in element.children)
             {
-                Spawn(child, gameObject.transform);
+                Spawn(child, gameObject.transform, objectMap);
+            }
+        }
+
+        public static void Update(GameObjectElement element, IDictionary<string, UnityEngine.Object> objectMap)
+        {
+            var gameObject = objectMap[element.fileID];
+            UpdateProperties(gameObject, element.properties);
+
+            foreach (var comp in element.components)
+            {
+                var instance = objectMap[comp.fileID];
+                UpdateProperties(instance, comp.properties);
+            }
+
+            foreach (var childElm in element.children)
+            {
+                Update(childElm, objectMap);
             }
         }
 
