@@ -86,8 +86,8 @@
             },
             "m_LocalPosition": {
               "x": "0",
-              "y": "0",
-              "z": "0"
+              "y": "2.39",
+              "z": "4.81"
             },
             "m_LocalScale": {
               "x": "1",
@@ -207,7 +207,7 @@
         "m_PrefabAsset": null,
         "serializedVersion": "6",
         "m_Layer": "0",
-        "m_Name": "Point Light",
+        "m_Name": "Spot Light",
         "m_TagString": "Untagged",
         "m_Icon": null,
         "m_NavMeshLayer": "0",
@@ -225,15 +225,15 @@
             "m_PrefabInstance": null,
             "m_PrefabAsset": null,
             "m_LocalRotation": {
-              "x": "0",
-              "y": "0",
-              "z": "0",
-              "w": "1"
+              "x": "0.050210103",
+              "y": "0.036858752",
+              "z": "-0.0018542854",
+              "w": "0.9980566"
             },
             "m_LocalPosition": {
               "x": "0",
-              "y": "0",
-              "z": "0"
+              "y": "6.05",
+              "z": "-4.86"
             },
             "m_LocalScale": {
               "x": "1",
@@ -242,8 +242,8 @@
             },
             "m_RootOrder": "1",
             "m_LocalEulerAnglesHint": {
-              "x": "0",
-              "y": "0",
+              "x": "5.76",
+              "y": "4.23",
               "z": "0"
             }
           }
@@ -259,7 +259,7 @@
             "m_PrefabAsset": null,
             "m_Enabled": "1",
             "serializedVersion": "10",
-            "m_Type": "2",
+            "m_Type": "0",
             "m_Shape": "0",
             "m_Color": {
               "r": "1",

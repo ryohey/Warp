@@ -90,7 +90,7 @@ namespace Warp
             ComponentElement CreateComponentElement(string fileID)
             {
                 var chunk = documents.First(obj => obj.fileID == fileID);
-                var properties = ReplaceFileIDZero(chunk.properties);
+                var properties = FixProperties(chunk.properties);
 
                 // Associations between Components and GameObject is represented by tree structure,
                 // so we don't need these references to GameObject
@@ -129,7 +129,7 @@ namespace Warp
                 {
                     typeName = gameObject.typeName,
                     fileID = gameObject.fileID,
-                    properties = ReplaceFileIDZero(properties),
+                    properties = FixProperties(properties),
                     children = children.Select(t =>
                     {
                         var fileID = t.GetValueAsDictionary<string>("fileID");
@@ -145,21 +145,6 @@ namespace Warp
                 };
             }
 
-            IDictionary<string, object> ReplaceFileIDZero(IDictionary<string, object> dict)
-            {
-                return dict.ToDictionary(
-                    entry => entry.Key,
-                    entry =>
-                {
-                    var d = entry.Value as IDictionary<object, object>;
-                    if (d != null && d.ContainsKey("fileID") && d["fileID"] as string == "0")
-                    {
-                        return null;
-                    }
-                    return entry.Value;
-                });
-            }
-
             var rootTransform = documents
                 .Where(chunk => chunk.classID == 4 && chunk.properties["m_Father"]?.GetValueAsDictionary<string>("fileID") == "0")
                 .First();
@@ -169,6 +154,48 @@ namespace Warp
 
             Debug.Log(json);
             File.WriteAllText(prefabFilePath + ".json", json);
+        }
+
+        private static IDictionary<string, object> FixProperties(IDictionary<string, object> dict)
+        {
+            return dict.ToDictionary(
+                entry => entry.Key,
+                entry => ReplaceFileIDZero(entry.Value)
+            );
+        }
+
+        private static object ValueToNumber(object value)
+        {
+            if (value is string str)
+            {
+                if (str.Contains("."))
+                {
+                    double.TryParse(str, out var outVal);
+
+                    if (double.IsNaN(outVal) || double.IsInfinity(outVal))
+                    {
+                        return 0;
+                    }
+                    return outVal;
+                }
+                else
+                {
+                    int.TryParse(str, out var outVal);
+                    return outVal;
+                }
+            }
+
+            return value;
+        }
+
+        private static object ReplaceFileIDZero(object value)
+        {
+            var d = value as IDictionary<object, object>;
+            if (d != null && d.ContainsKey("fileID") && d["fileID"] as string == "0")
+            {
+                return null;
+            }
+            return value;
         }
     }
 }
