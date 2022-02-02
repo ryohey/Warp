@@ -1,6 +1,6 @@
 {
     "name": "Warp.Editor",
-    "rootNamespace": "",
+    "rootNamespace": "Warp",
     "references": [
         "GUID:20c482cc99de54aa7a9a71beaadd48b3"
     ],

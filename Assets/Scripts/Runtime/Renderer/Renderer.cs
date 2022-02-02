@@ -8,12 +8,6 @@ using UnityEngine;
 
 namespace Warp
 {
-    public class RenderContext
-    {
-        // fileID to Object mapping
-        public IDictionary<string, UnityEngine.Object> objectMap = new Dictionary<string, UnityEngine.Object>();
-    }
-
     public class Renderer
     {
         public static RenderContext SpawnPrefab(string jsonPath)
@@ -38,7 +32,7 @@ namespace Warp
         public static void Spawn(GameObjectElement element, Transform parent, RenderContext context)
         {
             var gameObject = new GameObject();
-            context.objectMap[element.fileID] = gameObject;
+            context.objectMap[element.fileID] = gameObject.GetInstanceID();
 
             if (parent != null)
             {
@@ -58,7 +52,7 @@ namespace Warp
                 {
                     throw new Exception($"Failed to create instance: {comp.typeName}");
                 }
-                context.objectMap[comp.fileID] = instance;
+                context.objectMap[comp.fileID] = instance.GetInstanceID();
             }
 
             foreach (var child in element.children)
@@ -69,12 +63,19 @@ namespace Warp
 
         public static void Update(GameObjectElement element, RenderContext context)
         {
-            var gameObject = context.objectMap[element.fileID];
-            UpdateProperties(gameObject, element.properties);
+            var gameObject = context.FindObject(element.fileID);
+            try
+            {
+                UpdateProperties(gameObject, element.properties);
+            }
+            catch (Exception e)
+            {
+                Debug.LogError(e.Message);
+            }
 
             foreach (var comp in element.components)
             {
-                var instance = context.objectMap[comp.fileID];
+                var instance = context.FindObject(comp.fileID);
                 UpdateProperties(instance, comp.properties);
             }
 
@@ -146,6 +147,10 @@ namespace Warp
                             {
                                 prop.SetValue(target, outVal);
                             }
+                        }
+                        else
+                        {
+                            Debug.Log($"Not supported to parse {prop.PropertyType.Name} {prop.Name}");
                         }
                     }
                     else if (entry.Value is JObject obj)
@@ -221,6 +226,10 @@ namespace Warp
                             {
                                 prop.SetValue(target, new Quaternion(outX, outY, outZ, outW));
                             }
+                        }
+                        else
+                        {
+                            Debug.Log($"Not supported to parse {prop.PropertyType.Name} {prop.Name}");
                         }
                     }
                 }
