@@ -12,7 +12,6 @@ namespace Warp
     {
         private RenderContext context;
         private FileSystemWatcher watcher;
-        private SynchronizationContext mainThreadContext;
 
         [MenuItem("Warp/Edit")]
         public static void ShowWindow()
@@ -22,7 +21,6 @@ namespace Warp
 
         void OnGUI()
         {
-            mainThreadContext ??= SynchronizationContext.Current;
 
             if (GUILayout.Button("Convert prefab"))
             {
@@ -43,28 +41,7 @@ namespace Warp
             {
                 watcher?.Dispose();
                 var jsonPath = @"Assets/Prefabs/GameObject.prefab.json";
-                var context = Renderer.SpawnPrefab(jsonPath);
-                watcher = new FileSystemWatcher(Path.GetDirectoryName(jsonPath))
-                {
-                    Filter = Path.GetFileName(jsonPath),
-                    EnableRaisingEvents = true,
-                };
-                watcher.Changed += (sender, ev) =>
-                {
-                    Debug.Log($"{ev.ChangeType}: {jsonPath}");
-
-                    DoOnMainThread(() =>
-                    {
-                        try
-                        {
-                            Renderer.UpdatePrefab(jsonPath, context);
-                        }
-                        catch (Exception e)
-                        {
-                            Debug.LogError(e.Message);
-                        }
-                    });
-                };
+                watcher = Renderer.WatchPrefab(jsonPath);
             }
 
             if (watcher != null && GUILayout.Button("Stop Synchronization"))
@@ -72,14 +49,6 @@ namespace Warp
                 watcher.Dispose();
                 watcher = null;
             }
-        }
-
-        private void DoOnMainThread(Action action)
-        {
-            mainThreadContext.Post(__ =>
-            {
-                action();
-            }, null);
         }
     }
 }
