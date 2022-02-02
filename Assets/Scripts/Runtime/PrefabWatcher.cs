@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 
 namespace Warp
@@ -7,10 +8,16 @@ namespace Warp
     public class PrefabWatcher : MonoBehaviour
     {
         public string jsonPath;
+        private FileSystemWatcher watcher;
 
         void Start()
         {
-            Renderer.WatchPrefab(jsonPath, transform);
+            watcher = Renderer.WatchPrefab(jsonPath, transform);
+        }
+
+        private void OnDestroy()
+        {
+            watcher.Dispose();
         }
     }
 }
