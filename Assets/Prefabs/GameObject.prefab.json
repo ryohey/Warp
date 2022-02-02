@@ -8,7 +8,7 @@
     "m_PrefabAsset": null,
     "serializedVersion": "6",
     "m_Layer": "0",
-    "m_Name": "GameObjec1",
+    "m_Name": "GameObject",
     "m_TagString": "Untagged",
     "m_Icon": null,
     "m_NavMeshLayer": "0",
@@ -32,13 +32,13 @@
           "w": "1"
         },
         "m_LocalPosition": {
-          "x": "10",
+          "x": "1",
           "y": "1",
-          "z": "3"
+          "z": "0"
         },
         "m_LocalScale": {
           "x": "1",
-          "y": "2",
+          "y": "1",
           "z": "2"
         },
         "m_RootOrder": "0",

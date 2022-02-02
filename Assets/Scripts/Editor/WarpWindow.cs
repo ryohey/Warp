@@ -1,6 +1,8 @@
 ﻿#if UNITY_EDITOR
 
+using System;
 using System.IO;
+using System.Threading;
 using UnityEditor;
 using UnityEngine;
 
@@ -10,6 +12,7 @@ namespace Warp
     {
         private RenderContext context;
         private FileSystemWatcher watcher;
+        private SynchronizationContext mainThreadContext;
 
         [MenuItem("Warp/Edit")]
         public static void ShowWindow()
@@ -19,6 +22,8 @@ namespace Warp
 
         void OnGUI()
         {
+            mainThreadContext ??= SynchronizationContext.Current;
+
             if (GUILayout.Button("Convert prefab"))
             {
                 Encoder.Encode(@"Assets/Prefabs/GameObject.prefab");
@@ -44,10 +49,21 @@ namespace Warp
                     Filter = Path.GetFileName(jsonPath),
                     EnableRaisingEvents = true,
                 };
-                watcher.Changed += (sender, e) =>
+                watcher.Changed += (sender, ev) =>
                 {
-                    Debug.Log($"{e.ChangeType}: {jsonPath}");
-                    Renderer.UpdatePrefab(jsonPath, context);
+                    Debug.Log($"{ev.ChangeType}: {jsonPath}");
+
+                    DoOnMainThread(() =>
+                    {
+                        try
+                        {
+                            Renderer.UpdatePrefab(jsonPath, context);
+                        }
+                        catch (Exception e)
+                        {
+                            Debug.LogError(e.Message);
+                        }
+                    });
                 };
             }
 
@@ -56,6 +72,14 @@ namespace Warp
                 watcher.Dispose();
                 watcher = null;
             }
+        }
+
+        private void DoOnMainThread(Action action)
+        {
+            mainThreadContext.Post(__ =>
+            {
+                action();
+            }, null);
         }
     }
 }

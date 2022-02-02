@@ -64,14 +64,7 @@ namespace Warp
         public static void Update(GameObjectElement element, RenderContext context)
         {
             var gameObject = context.FindObject(element.fileID);
-            try
-            {
-                UpdateProperties(gameObject, element.properties);
-            }
-            catch (Exception e)
-            {
-                Debug.LogError(e.Message);
-            }
+            UpdateProperties(gameObject, element.properties);
 
             foreach (var comp in element.components)
             {
