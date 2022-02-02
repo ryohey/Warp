@@ -153,7 +153,11 @@ namespace Warp
             string json = JsonConvert.SerializeObject(gameObjectElement, Formatting.Indented);
 
             Debug.Log(json);
-            File.WriteAllText(prefabFilePath + ".json", json);
+
+            var jsonPath = prefabFilePath + ".json";
+            File.WriteAllText(jsonPath, json);
+
+            Debug.Log($"Save Prefab {prefabFilePath} to {jsonPath}");
         }
 
         private static IDictionary<string, object> FixProperties(IDictionary<string, object> dict)
