@@ -2,7 +2,8 @@
     "name": "Warp.Editor",
     "rootNamespace": "Warp",
     "references": [
-        "GUID:20c482cc99de54aa7a9a71beaadd48b3"
+        "GUID:20c482cc99de54aa7a9a71beaadd48b3",
+        "GUID:b3f49edfedc855a48aa1a9e5d3cba438"
     ],
     "includePlatforms": [
         "Editor"

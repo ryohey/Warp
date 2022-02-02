@@ -70,7 +70,7 @@ namespace Warp
 
             foreach (var comp in element.components)
             {
-                var type = GetUnityType(comp.typeName);
+                var type = TypeUtils.GetUnityType(comp.typeName);
                 if (type == null)
                 {
                     throw new Exception($"Failed to get type: {comp.typeName}");
@@ -107,18 +107,12 @@ namespace Warp
             }
         }
 
-        public static Type GetUnityType(string className)
-        {
-            return Type.GetType($"UnityEngine.{className}, UnityEngine.dll");
-        }
-
         private static void UpdateProperties(object target, IDictionary<string, object> properties)
         {
             foreach (var entry in properties)
             {
                 var type = target.GetType();
-                var propName = Regex.Replace(entry.Key, @"^m_", string.Empty)
-                    .FirstCharToLowerCase();
+                var propName = TypeUtils.FixPropName(entry.Key);
                 var prop = type.GetProperty(propName);
 
                 //var field = type.GetField(propName);

@@ -20,25 +20,6 @@ namespace Warp
         public IDictionary<string, object> properties;
     }
 
-    public interface IElement { }
-
-    public struct GameObjectElement : IElement
-    {
-        public string typeName;
-        public string fileID;
-        public IDictionary<string, object> properties;
-        public IList<ComponentElement> components;
-        public IList<GameObjectElement> children;
-    }
-
-    public struct ComponentElement : IElement
-    {
-        public string typeName;
-        public int classID;
-        public string fileID;
-        public IDictionary<string, object> properties;
-    }
-
     public static class Encoder
     {
         static IList<YamlChunk> SplitPrefabDocument(string prefabText)
@@ -90,7 +71,8 @@ namespace Warp
             ComponentElement CreateComponentElement(string fileID)
             {
                 var chunk = documents.First(obj => obj.fileID == fileID);
-                var properties = FixProperties(chunk.properties);
+                var classType = TypeUtils.GetUnityType(chunk.typeName);
+                var properties = FixProperties(chunk.properties, classType);
 
                 // Associations between Components and GameObject is represented by tree structure,
                 // so we don't need these references to GameObject
@@ -125,11 +107,13 @@ namespace Warp
                 var components = properties["m_Component"] as IList<object>;
                 properties.Remove("m_Component");
 
+                var classType = TypeUtils.GetUnityType(gameObject.typeName);
+
                 return new GameObjectElement
                 {
                     typeName = gameObject.typeName,
                     fileID = gameObject.fileID,
-                    properties = FixProperties(properties),
+                    properties = FixProperties(properties, classType),
                     children = children.Select(t =>
                     {
                         var fileID = t.GetValueAsDictionary<string>("fileID");
@@ -160,11 +144,22 @@ namespace Warp
             Debug.Log($"Save Prefab {prefabFilePath} to {jsonPath}");
         }
 
-        private static IDictionary<string, object> FixProperties(IDictionary<string, object> dict)
+        private static IDictionary<string, object> FixProperties(IDictionary<string, object> dict, Type classType)
         {
             return dict.ToDictionary(
                 entry => entry.Key,
-                entry => ReplaceFileIDZero(entry.Value)
+                entry =>
+                {
+                    var propName = TypeUtils.FixPropName(entry.Key);
+                    var prop = classType.GetProperty(propName);
+
+                    if (prop?.PropertyType == typeof(Mesh))
+                    {
+                        return AssetResolver.ResolveMesh(entry.Value.GetValueAsDictionary<string>("fileID"));
+                    }
+
+                    return ReplaceFileIDZero(entry.Value);
+                }
             );
         }
 
