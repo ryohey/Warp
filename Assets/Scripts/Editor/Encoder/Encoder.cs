@@ -150,15 +150,20 @@ namespace Warp
                 entry => entry.Key,
                 entry =>
                 {
+                    if (IsFileIDZero(entry.Value))
+                    {
+                        return null;
+                    }
+
                     var propName = TypeUtils.FixPropName(entry.Key);
                     var prop = classType.GetProperty(propName);
 
                     if (prop?.PropertyType == typeof(Mesh))
                     {
-                        return AssetResolver.ResolveMesh(entry.Value.GetValueAsDictionary<string>("fileID"));
+                        return AssetResolver.ResolveMesh(entry.Value.GetValueAsDictionary<string>("guid"));
                     }
 
-                    return ReplaceFileIDZero(entry.Value);
+                    return entry.Value;
                 }
             );
         }
@@ -187,14 +192,10 @@ namespace Warp
             return value;
         }
 
-        private static object ReplaceFileIDZero(object value)
+        private static bool IsFileIDZero(object value)
         {
             var d = value as IDictionary<object, object>;
-            if (d != null && d.ContainsKey("fileID") && d["fileID"] as string == "0")
-            {
-                return null;
-            }
-            return value;
+            return d != null && d.ContainsKey("fileID") && d["fileID"] as string == "0";
         }
     }
 }
