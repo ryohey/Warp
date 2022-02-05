@@ -112,8 +112,9 @@
             "m_PrefabInstance": null,
             "m_PrefabAsset": null,
             "m_Mesh": {
-              "type": "Mesh",
-              "guid": "ea581b523a15f4acdac7fbbb76213519"
+              "fileID": "4300000",
+              "guid": "ea581b523a15f4acdac7fbbb76213519",
+              "type": "2"
             }
           }
         },

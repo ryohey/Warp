@@ -138,6 +138,10 @@ namespace Warp
 
             Debug.Log(json);
 
+            Debug.Log("Create AssetBundles...");
+
+            AssetResolver.CreateDependantAssetBundles(gameObjectElement);
+
             var jsonPath = prefabFilePath + ".json";
             File.WriteAllText(jsonPath, json);
 
@@ -153,14 +157,6 @@ namespace Warp
                     if (IsFileIDZero(entry.Value))
                     {
                         return null;
-                    }
-
-                    var propName = TypeUtils.FixPropName(entry.Key);
-                    var prop = classType.GetProperty(propName);
-
-                    if (prop?.PropertyType == typeof(Mesh))
-                    {
-                        return AssetResolver.ResolveMesh(entry.Value.GetValueAsDictionary<string>("guid"));
                     }
 
                     return entry.Value;

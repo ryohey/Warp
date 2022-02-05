@@ -114,6 +114,12 @@ namespace Warp
             {
                 var type = target.GetType();
                 var propName = TypeUtils.FixPropName(entry.Key);
+
+                if (propName == "materials")
+                {
+                    Debug.Log("break");
+                }
+
                 var prop = type.GetProperty(propName);
 
                 //var field = type.GetField(propName);
@@ -122,196 +128,224 @@ namespace Warp
                 //    field.SetValue(gameObject, entry.Value);
                 //}
 
-                if (prop != null)
+                if (prop == null)
                 {
-                    if (entry.Value is string value)
+                    Debug.Log($"Property {propName} is not found in the type {type.Name}");
+                    continue;
+                }
+
+                if (entry.Value is string value)
+                {
+                    if (prop.PropertyType == typeof(string))
                     {
-                        if (prop.PropertyType == typeof(string))
+                        prop.SetValue(target, value);
+                    }
+                    else if (prop.PropertyType == typeof(bool))
+                    {
+                        if (int.TryParse(value, out var outVal))
                         {
-                            prop.SetValue(target, value);
+                            prop.SetValue(target, outVal == 1);
                         }
-                        else if (prop.PropertyType == typeof(bool))
+                    }
+                    else if (prop.PropertyType == typeof(int))
+                    {
+                        if (int.TryParse(value, out var outVal))
+                        {
+                            prop.SetValue(target, outVal);
+                        }
+                    }
+                    else if (prop.PropertyType == typeof(uint))
+                    {
+                        if (uint.TryParse(value, out var outVal))
+                        {
+                            prop.SetValue(target, outVal);
+                        }
+                    }
+                    else if (prop.PropertyType == typeof(long))
+                    {
+                        if (long.TryParse(value, out var outVal))
+                        {
+                            prop.SetValue(target, outVal);
+                        }
+                    }
+                    else if (prop.PropertyType == typeof(float))
+                    {
+                        if (float.TryParse(value, out var outVal))
+                        {
+                            prop.SetValue(target, outVal);
+                        }
+                    }
+                    else if (prop.PropertyType == typeof(double))
+                    {
+                        if (double.TryParse(value, out var outVal))
+                        {
+                            prop.SetValue(target, outVal);
+                        }
+                    }
+                    else if (prop.PropertyType.IsEnum)
+                    {
+                        var enumType = prop.PropertyType.GetEnumUnderlyingType();
+                        if (enumType == typeof(int))
                         {
                             if (int.TryParse(value, out var outVal))
                             {
-                                prop.SetValue(target, outVal == 1);
-                            }
-                        }
-                        else if (prop.PropertyType == typeof(int))
-                        {
-                            if (int.TryParse(value, out var outVal))
-                            {
-                                prop.SetValue(target, outVal);
-                            }
-                        }
-                        else if (prop.PropertyType == typeof(uint))
-                        {
-                            if (uint.TryParse(value, out var outVal))
-                            {
-                                prop.SetValue(target, outVal);
-                            }
-                        }
-                        else if (prop.PropertyType == typeof(long))
-                        {
-                            if (long.TryParse(value, out var outVal))
-                            {
-                                prop.SetValue(target, outVal);
-                            }
-                        }
-                        else if (prop.PropertyType == typeof(float))
-                        {
-                            if (float.TryParse(value, out var outVal))
-                            {
-                                prop.SetValue(target, outVal);
-                            }
-                        }
-                        else if (prop.PropertyType == typeof(double))
-                        {
-                            if (double.TryParse(value, out var outVal))
-                            {
-                                prop.SetValue(target, outVal);
-                            }
-                        }
-                        else if (prop.PropertyType.IsEnum)
-                        {
-                            var enumType = prop.PropertyType.GetEnumUnderlyingType();
-                            if (enumType == typeof(int))
-                            {
-                                if (int.TryParse(value, out var outVal))
-                                {
-                                    prop.SetValue(target, Enum.ToObject(prop.PropertyType, outVal));
-                                }
-                                else
-                                {
-                                    Debug.LogWarning($"Enum type {enumType.Name} does not match {value}");
-                                }
-                            }
-                            else if (enumType == typeof(string))
-                            {
-                                prop.SetValue(target, Enum.Parse(prop.PropertyType, value));
+                                prop.SetValue(target, Enum.ToObject(prop.PropertyType, outVal));
                             }
                             else
                             {
-                                Debug.LogWarning($"Unsupported enum type {enumType.Name}");
+                                Debug.LogWarning($"Enum type {enumType.Name} does not match {value}");
                             }
+                        }
+                        else if (enumType == typeof(string))
+                        {
+                            prop.SetValue(target, Enum.Parse(prop.PropertyType, value));
                         }
                         else
                         {
-                            Debug.Log($"Not supported to parse {prop.PropertyType.Name} {prop.Name}");
+                            Debug.LogWarning($"Unsupported enum type {enumType.Name}");
                         }
                     }
-                    else if (entry.Value is JObject obj)
+                    else
                     {
-                        if (prop.PropertyType == typeof(Vector2Int))
-                        {
-                            var x = obj["x"].Value<string>();
-                            var y = obj["y"].Value<string>();
-                            if (int.TryParse(x, out var outX)
-                                && int.TryParse(y, out var outY))
-                            {
-                                prop.SetValue(target, new Vector2Int(outX, outY));
-                            }
-                        }
-                        else if (prop.PropertyType == typeof(Vector2))
-                        {
-                            var x = obj["x"].Value<string>();
-                            var y = obj["y"].Value<string>();
-                            if (float.TryParse(x, out var outX)
-                                && float.TryParse(y, out var outY))
-                            {
-                                prop.SetValue(target, new Vector2(outX, outY));
-                            }
-                        }
-                        else if (prop.PropertyType == typeof(Vector3Int))
-                        {
-                            var x = obj["x"].Value<string>();
-                            var y = obj["y"].Value<string>();
-                            var z = obj["z"].Value<string>();
-                            if (int.TryParse(x, out var outX)
-                                && int.TryParse(y, out var outY)
-                                && int.TryParse(z, out var outZ))
-                            {
-                                prop.SetValue(target, new Vector3Int(outX, outY, outZ));
-                            }
-                        }
-                        else if (prop.PropertyType == typeof(Vector3))
-                        {
-                            var x = obj["x"].Value<string>();
-                            var y = obj["y"].Value<string>();
-                            var z = obj["z"].Value<string>();
-                            if (float.TryParse(x, out var outX)
-                                && float.TryParse(y, out var outY)
-                                && float.TryParse(z, out var outZ))
-                            {
-                                prop.SetValue(target, new Vector3(outX, outY, outZ));
-                            }
-                        }
-                        else if (prop.PropertyType == typeof(Vector4))
-                        {
-                            var x = obj["x"].Value<string>();
-                            var y = obj["y"].Value<string>();
-                            var z = obj["z"].Value<string>();
-                            var w = obj["w"].Value<string>();
-                            if (float.TryParse(x, out var outX)
-                                && float.TryParse(y, out var outY)
-                                && float.TryParse(z, out var outZ)
-                                && float.TryParse(w, out var outW))
-                            {
-                                prop.SetValue(target, new Vector4(outX, outY, outZ, outW));
-                            }
-                        }
-                        else if (prop.PropertyType == typeof(Quaternion))
-                        {
-                            var x = obj["x"].Value<string>();
-                            var y = obj["y"].Value<string>();
-                            var z = obj["z"].Value<string>();
-                            var w = obj["w"].Value<string>();
-                            if (float.TryParse(x, out var outX)
-                                && float.TryParse(y, out var outY)
-                                && float.TryParse(z, out var outZ)
-                                && float.TryParse(w, out var outW))
-                            {
-                                prop.SetValue(target, new Quaternion(outX, outY, outZ, outW));
-                            }
-                        }
-                        else if (prop.PropertyType == typeof(Mesh))
-                        {
-                            var guid = obj["guid"].Value<string>();
-
-                            var bundle = AssetBundle.LoadFromFile($"AssetBundle/{guid}");
-                            var mesh = bundle.LoadAllAssets<Mesh>();
-                            if (mesh.Length == 0)
-                            {
-                                Debug.LogError($"AssetBundle {guid} does not contains Mesh");
-                            }
-                            prop.SetValue(target, mesh[0]);
-                            bundle.Unload(false);
-                        }
-                        else if (prop.PropertyType == typeof(Color))
-                        {
-                            var r = obj["r"].Value<string>();
-                            var g = obj["g"].Value<string>();
-                            var b = obj["b"].Value<string>();
-                            var a = obj["a"].Value<string>();
-                            if (float.TryParse(r, out var outR)
-                                && float.TryParse(g, out var outG)
-                                && float.TryParse(b, out var outB)
-                                && float.TryParse(a, out var outA))
-                            {
-                                prop.SetValue(target, new Color(outR, outG, outB, outA));
-                            }
-                        }
-                        else
-                        {
-                            Debug.Log($"Not supported to parse {prop.PropertyType.Name} {prop.Name}");
-                        }
+                        Debug.Log($"Not supported to parse {prop.PropertyType.Name} {prop.Name}");
                     }
                 }
-                else
+                else if (entry.Value is JObject obj)
                 {
-                    Debug.Log($"Property {propName} is not found in the type {type.Name}");
+                    if (prop.PropertyType == typeof(Vector2Int))
+                    {
+                        var x = obj["x"].Value<string>();
+                        var y = obj["y"].Value<string>();
+                        if (int.TryParse(x, out var outX)
+                            && int.TryParse(y, out var outY))
+                        {
+                            prop.SetValue(target, new Vector2Int(outX, outY));
+                        }
+                    }
+                    else if (prop.PropertyType == typeof(Vector2))
+                    {
+                        var x = obj["x"].Value<string>();
+                        var y = obj["y"].Value<string>();
+                        if (float.TryParse(x, out var outX)
+                            && float.TryParse(y, out var outY))
+                        {
+                            prop.SetValue(target, new Vector2(outX, outY));
+                        }
+                    }
+                    else if (prop.PropertyType == typeof(Vector3Int))
+                    {
+                        var x = obj["x"].Value<string>();
+                        var y = obj["y"].Value<string>();
+                        var z = obj["z"].Value<string>();
+                        if (int.TryParse(x, out var outX)
+                            && int.TryParse(y, out var outY)
+                            && int.TryParse(z, out var outZ))
+                        {
+                            prop.SetValue(target, new Vector3Int(outX, outY, outZ));
+                        }
+                    }
+                    else if (prop.PropertyType == typeof(Vector3))
+                    {
+                        var x = obj["x"].Value<string>();
+                        var y = obj["y"].Value<string>();
+                        var z = obj["z"].Value<string>();
+                        if (float.TryParse(x, out var outX)
+                            && float.TryParse(y, out var outY)
+                            && float.TryParse(z, out var outZ))
+                        {
+                            prop.SetValue(target, new Vector3(outX, outY, outZ));
+                        }
+                    }
+                    else if (prop.PropertyType == typeof(Vector4))
+                    {
+                        var x = obj["x"].Value<string>();
+                        var y = obj["y"].Value<string>();
+                        var z = obj["z"].Value<string>();
+                        var w = obj["w"].Value<string>();
+                        if (float.TryParse(x, out var outX)
+                            && float.TryParse(y, out var outY)
+                            && float.TryParse(z, out var outZ)
+                            && float.TryParse(w, out var outW))
+                        {
+                            prop.SetValue(target, new Vector4(outX, outY, outZ, outW));
+                        }
+                    }
+                    else if (prop.PropertyType == typeof(Quaternion))
+                    {
+                        var x = obj["x"].Value<string>();
+                        var y = obj["y"].Value<string>();
+                        var z = obj["z"].Value<string>();
+                        var w = obj["w"].Value<string>();
+                        if (float.TryParse(x, out var outX)
+                            && float.TryParse(y, out var outY)
+                            && float.TryParse(z, out var outZ)
+                            && float.TryParse(w, out var outW))
+                        {
+                            prop.SetValue(target, new Quaternion(outX, outY, outZ, outW));
+                        }
+                    }
+                    else if (prop.PropertyType == typeof(Mesh))
+                    {
+                        var guid = obj["guid"].Value<string>();
+                        var mesh = LoadFromAssetBundle<Mesh>(guid);
+                        prop.SetValue(target, mesh);
+                    }
+                    else if (prop.PropertyType == typeof(Color))
+                    {
+                        var r = obj["r"].Value<string>();
+                        var g = obj["g"].Value<string>();
+                        var b = obj["b"].Value<string>();
+                        var a = obj["a"].Value<string>();
+                        if (float.TryParse(r, out var outR)
+                            && float.TryParse(g, out var outG)
+                            && float.TryParse(b, out var outB)
+                            && float.TryParse(a, out var outA))
+                        {
+                            prop.SetValue(target, new Color(outR, outG, outB, outA));
+                        }
+                    }
+                    else
+                    {
+                        Debug.Log($"Not supported to parse {prop.PropertyType.Name} {prop.Name}");
+                    }
+                }
+                else if (entry.Value is JArray array)
+                {
+                    if (prop.PropertyType.IsArray)
+                    {
+                        var elementType = prop.PropertyType.GetElementType();
+                        if (elementType == typeof(Material))
+                        {
+                            var materials = new List<Material>();
+                            foreach (var item in array)
+                            {
+                                var dict = item.Value<JObject>();
+                                var guid = dict["guid"].Value<string>();
+                                var material = LoadFromAssetBundle<Material>(guid);
+                                materials.Add(material);
+                            }
+                            prop.SetValue(target, materials.ToArray());
+                        }
+                        Debug.Log(prop.Name);
+                    }
+                    else
+                    {
+                        Debug.Log($"Cannot assign array to the non-array property {prop.Name}");
+                    }
                 }
             }
+        }
+
+        private static T LoadFromAssetBundle<T>(string guid) where T : UnityEngine.Object
+        {
+            var bundle = AssetBundle.LoadFromFile($"AssetBundle/{guid}");
+            var assets = bundle.LoadAllAssets<T>();
+            if (assets.Length == 0)
+            {
+                Debug.LogError($"AssetBundle {guid} does not contains Mesh");
+            }
+            bundle.Unload(false);
+            return assets[0];
         }
     }
 
