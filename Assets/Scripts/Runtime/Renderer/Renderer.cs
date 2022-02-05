@@ -12,7 +12,15 @@ namespace Warp
 {
     public class Renderer
     {
-        public static RenderContext SpawnPrefab(string jsonPath, Transform parent = null)
+        private readonly AssetLoader assetLoader;
+        private AssetLoader assetLoader1;
+
+        public Renderer(AssetLoader assetLoader)
+        {
+            this.assetLoader = assetLoader;
+        }
+
+        public RenderContext SpawnPrefab(string jsonPath, Transform parent = null)
         {
             var json = File.ReadAllText(jsonPath);
             var gameObjectElement = JsonConvert.DeserializeObject<GameObjectElement>(json);
@@ -24,14 +32,14 @@ namespace Warp
             return context;
         }
 
-        public static void UpdatePrefab(string jsonPath, RenderContext context)
+        public void UpdatePrefab(string jsonPath, RenderContext context)
         {
             var json = File.ReadAllText(jsonPath);
             var gameObjectElement = JsonConvert.DeserializeObject<GameObjectElement>(json);
             Update(gameObjectElement, context);
         }
 
-        public static FileSystemWatcher WatchPrefab(string jsonPath, Transform parent = null)
+        public FileSystemWatcher WatchPrefab(string jsonPath, Transform parent = null)
         {
             var mainThreadContext = SynchronizationContext.Current;
             var context = SpawnPrefab(jsonPath, parent);
@@ -59,7 +67,7 @@ namespace Warp
             return watcher;
         }
 
-        public static void Spawn(GameObjectElement element, Transform parent, RenderContext context)
+        public void Spawn(GameObjectElement element, Transform parent, RenderContext context)
         {
             var gameObject = new GameObject();
             context.objectMap[element.fileID] = gameObject.GetInstanceID();
@@ -91,7 +99,7 @@ namespace Warp
             }
         }
 
-        public static void Update(GameObjectElement element, RenderContext context)
+        public void Update(GameObjectElement element, RenderContext context)
         {
             var gameObject = context.FindObject(element.fileID);
             UpdateProperties(gameObject, element.properties);
@@ -108,7 +116,7 @@ namespace Warp
             }
         }
 
-        private static void UpdateProperties(object target, IDictionary<string, object> properties)
+        private void UpdateProperties(object target, IDictionary<string, object> properties)
         {
             foreach (var entry in properties)
             {
@@ -287,7 +295,7 @@ namespace Warp
                     else if (prop.PropertyType == typeof(Mesh))
                     {
                         var guid = obj["guid"].Value<string>();
-                        var mesh = LoadFromAssetBundle<Mesh>(guid);
+                        var mesh = assetLoader.Load<Mesh>(guid);
                         prop.SetValue(target, mesh);
                     }
                     else if (prop.PropertyType == typeof(Color))
@@ -321,7 +329,7 @@ namespace Warp
                             {
                                 var dict = item.Value<JObject>();
                                 var guid = dict["guid"].Value<string>();
-                                var material = LoadFromAssetBundle<Material>(guid);
+                                var material = assetLoader.Load<Material>(guid);
                                 materials.Add(material);
                             }
                             prop.SetValue(target, materials.ToArray());
@@ -334,29 +342,6 @@ namespace Warp
                     }
                 }
             }
-        }
-
-        private static T LoadFromAssetBundle<T>(string guid) where T : UnityEngine.Object
-        {
-            var bundle = AssetBundle.LoadFromFile($"AssetBundle/{guid}");
-            var assets = bundle.LoadAllAssets<T>();
-            if (assets.Length == 0)
-            {
-                Debug.LogError($"AssetBundle {guid} does not contains Mesh");
-            }
-            bundle.Unload(false);
-            return assets[0];
-        }
-    }
-
-    public static class StringExtensions
-    {
-        public static string FirstCharToLowerCase(this string str)
-        {
-            if (string.IsNullOrEmpty(str) || char.IsLower(str[0]))
-                return str;
-
-            return char.ToLower(str[0]) + str.Substring(1);
         }
     }
 }

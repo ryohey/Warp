@@ -8,11 +8,13 @@ namespace Warp
     public class PrefabWatcher : MonoBehaviour
     {
         public string jsonPath;
+        public string assetPath;
         private FileSystemWatcher watcher;
 
         void Start()
         {
-            watcher = Renderer.WatchPrefab(jsonPath, transform);
+            var renderer = new Renderer(new AssetLoader(assetPath));
+            watcher = renderer.WatchPrefab(jsonPath, transform);
         }
 
         private void OnDestroy()

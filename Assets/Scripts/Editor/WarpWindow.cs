@@ -12,11 +12,16 @@ namespace Warp
     {
         private RenderContext context;
         private FileSystemWatcher watcher;
+        private Renderer renderer = new Renderer(new AssetLoader("AssetBundle"));
 
         [MenuItem("Warp/Edit")]
         public static void ShowWindow()
         {
             GetWindow(typeof(WarpWindow));
+        }
+
+        private void Awake()
+        {
         }
 
         void OnGUI()
@@ -29,19 +34,19 @@ namespace Warp
 
             if (GUILayout.Button("Spawn prefab"))
             {
-                context = Renderer.SpawnPrefab(@"Assets/Prefabs/GameObject.prefab.json");
+                context = renderer.SpawnPrefab(@"Assets/Prefabs/GameObject.prefab.json");
             }
 
             if (GUILayout.Button("Update prefab") && context != null)
             {
-                Renderer.UpdatePrefab(@"Assets/Prefabs/GameObject.prefab.json", context);
+                renderer.UpdatePrefab(@"Assets/Prefabs/GameObject.prefab.json", context);
             }
 
             if (GUILayout.Button("Spawn and Synchronize"))
             {
                 watcher?.Dispose();
                 var jsonPath = @"Assets/Prefabs/GameObject.prefab.json";
-                watcher = Renderer.WatchPrefab(jsonPath);
+                watcher = renderer.WatchPrefab(jsonPath);
             }
 
             if (watcher != null && GUILayout.Button("Stop Synchronization"))
