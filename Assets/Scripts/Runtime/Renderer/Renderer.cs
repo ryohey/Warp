@@ -144,6 +144,13 @@ namespace Warp
                                 prop.SetValue(target, outVal);
                             }
                         }
+                        else if (prop.PropertyType == typeof(uint))
+                        {
+                            if (uint.TryParse(value, out var outVal))
+                            {
+                                prop.SetValue(target, outVal);
+                            }
+                        }
                         else if (prop.PropertyType == typeof(long))
                         {
                             if (long.TryParse(value, out var outVal))
@@ -163,6 +170,29 @@ namespace Warp
                             if (double.TryParse(value, out var outVal))
                             {
                                 prop.SetValue(target, outVal);
+                            }
+                        }
+                        else if (prop.PropertyType.IsEnum)
+                        {
+                            var enumType = prop.PropertyType.GetEnumUnderlyingType();
+                            if (enumType == typeof(int))
+                            {
+                                if (int.TryParse(value, out var outVal))
+                                {
+                                    prop.SetValue(target, Enum.ToObject(prop.PropertyType, outVal));
+                                }
+                                else
+                                {
+                                    Debug.LogWarning($"Enum type {enumType.Name} does not match {value}");
+                                }
+                            }
+                            else if (enumType == typeof(string))
+                            {
+                                prop.SetValue(target, Enum.Parse(prop.PropertyType, value));
+                            }
+                            else
+                            {
+                                Debug.LogWarning($"Unsupported enum type {enumType.Name}");
                             }
                         }
                         else
@@ -255,6 +285,21 @@ namespace Warp
                                 Debug.LogError($"AssetBundle {guid} does not contains Mesh");
                             }
                             prop.SetValue(target, mesh[0]);
+                            bundle.Unload(false);
+                        }
+                        else if (prop.PropertyType == typeof(Color))
+                        {
+                            var r = obj["r"].Value<string>();
+                            var g = obj["g"].Value<string>();
+                            var b = obj["b"].Value<string>();
+                            var a = obj["a"].Value<string>();
+                            if (float.TryParse(r, out var outR)
+                                && float.TryParse(g, out var outG)
+                                && float.TryParse(b, out var outB)
+                                && float.TryParse(a, out var outA))
+                            {
+                                prop.SetValue(target, new Color(outR, outG, outB, outA));
+                            }
                         }
                         else
                         {
