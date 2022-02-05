@@ -19,10 +19,23 @@ namespace Warp
                 return null;
             }
 
+            var assetBundleBuild = new AssetBundleBuild
+            {
+                assetBundleName = guid,
+                assetNames = new[] { path }
+            };
+
+            var manifest = BuildPipeline.BuildAssetBundles(
+                $"AssetBundle",
+                new[] { assetBundleBuild },
+                BuildAssetBundleOptions.None,
+                BuildTarget.StandaloneOSX
+                );
+
             return new Dictionary<string, object>
             {
                 { "type", "Mesh" },
-                { "path", path }
+                { "guid", guid }
             };
         }
     }

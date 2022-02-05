@@ -6,6 +6,7 @@ using System.Threading;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using UnityEngine;
+using UnityEngine.Networking;
 
 namespace Warp
 {
@@ -242,6 +243,18 @@ namespace Warp
                             {
                                 prop.SetValue(target, new Quaternion(outX, outY, outZ, outW));
                             }
+                        }
+                        else if (prop.PropertyType == typeof(Mesh))
+                        {
+                            var guid = obj["guid"].Value<string>();
+
+                            var bundle = AssetBundle.LoadFromFile($"AssetBundle/{guid}");
+                            var mesh = bundle.LoadAllAssets<Mesh>();
+                            if (mesh.Length == 0)
+                            {
+                                Debug.LogError($"AssetBundle {guid} does not contains Mesh");
+                            }
+                            prop.SetValue(target, mesh[0]);
                         }
                         else
                         {

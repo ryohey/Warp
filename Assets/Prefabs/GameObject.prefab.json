@@ -113,7 +113,7 @@
             "m_PrefabAsset": null,
             "m_Mesh": {
               "type": "Mesh",
-              "path": "Assets/Meshes/Cube.mesh"
+              "guid": "ea581b523a15f4acdac7fbbb76213519"
             }
           }
         },

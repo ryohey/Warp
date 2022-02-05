@@ -1,0 +1,17 @@
+ManifestFileVersion: 0
+CRC: 1848854813
+Hashes:
+  AssetFileHash:
+    serializedVersion: 2
+    Hash: 68b4c53b7e1337fbf3a4081cbdf2968b
+  TypeTreeHash:
+    serializedVersion: 2
+    Hash: 78b4eb24b215c292a3fbe4dfa013d0e8
+HashAppended: 0
+ClassTypes:
+- Class: 43
+  Script: {instanceID: 0}
+SerializeReferenceClassIdentifiers: []
+Assets:
+- Assets/Meshes/Cube.mesh
+Dependencies: []
