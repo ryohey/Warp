@@ -3,6 +3,7 @@
 using System;
 using System.IO;
 using System.Threading;
+using Newtonsoft.Json;
 using UnityEditor;
 using UnityEngine;
 
@@ -13,6 +14,7 @@ namespace Warp
         private RenderContext context;
         private FileSystemWatcher watcher;
         private Renderer renderer = new Renderer(new AssetLoader("AssetBundle"));
+        private Server server;
 
         [MenuItem("Warp/Edit")]
         public static void ShowWindow()
@@ -20,16 +22,24 @@ namespace Warp
             GetWindow(typeof(WarpWindow));
         }
 
-        private void Awake()
-        {
-        }
-
         void OnGUI()
         {
+            var baseDir = Path.Combine(Path.GetDirectoryName(Application.dataPath), "static");
 
             if (GUILayout.Button("Convert prefab"))
             {
-                Encoder.Encode(@"Assets/Prefabs/GameObject.prefab");
+                var prefabFilePath = @"Assets/Prefabs/GameObject.prefab";
+                var gameObjectElement = Encoder.Encode(prefabFilePath);
+
+                string json = JsonConvert.SerializeObject(gameObjectElement, Formatting.Indented);
+                Debug.Log(json);
+                var jsonPath = Path.Combine(baseDir, Path.GetFileName(prefabFilePath) + ".json");
+                File.WriteAllText(jsonPath, json);
+                Debug.Log($"Save Prefab {prefabFilePath} to {jsonPath}");
+
+                Debug.Log("Create AssetBundles...");
+                var assetResolver = new AssetResolver("static/");
+                assetResolver.CreateDependantAssetBundles(gameObjectElement);
             }
 
             if (GUILayout.Button("Spawn prefab"))
@@ -53,6 +63,17 @@ namespace Warp
             {
                 watcher.Dispose();
                 watcher = null;
+            }
+
+            if (server == null && GUILayout.Button("Start server"))
+            {
+                server = new Server("http://localhost:8080/", baseDir);
+            }
+
+            if (server != null && GUILayout.Button("Stop server"))
+            {
+                server.Stop();
+                server = null;
             }
         }
     }

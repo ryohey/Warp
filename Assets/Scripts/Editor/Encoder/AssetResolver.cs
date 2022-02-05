@@ -5,9 +5,16 @@ using UnityEngine;
 
 namespace Warp
 {
-    public static class AssetResolver
+    public class AssetResolver
     {
-        public static void CreateDependantAssetBundles(IElement element)
+        private readonly string outputPath;
+
+        public AssetResolver(string outputPath)
+        {
+            this.outputPath = outputPath;
+        }
+
+        public void CreateDependantAssetBundles(IElement element)
         {
             if (element is GameObjectElement gameObjectElement)
             {
@@ -29,7 +36,7 @@ namespace Warp
             }
         }
 
-        private static void CreateAssetBundlesInProperties(IDictionary<string, object> properties)
+        private void CreateAssetBundlesInProperties(IDictionary<string, object> properties)
         {
             foreach (var entry in properties)
             {
@@ -52,7 +59,7 @@ namespace Warp
             }
         }
 
-        private static string TryGetGUID(object value)
+        private string TryGetGUID(object value)
         {
             if (value is IDictionary<object, object> dict
             && dict.ContainsKey("guid")
@@ -63,7 +70,7 @@ namespace Warp
             return null;
         }
 
-        private static void CreateAssetBundle(string guid)
+        private void CreateAssetBundle(string guid)
         {
             var path = AssetDatabase.GUIDToAssetPath(guid);
             Debug.Log($"ResolveMesh {guid} -> {path}");
@@ -82,7 +89,7 @@ namespace Warp
             };
 
             var manifest = BuildPipeline.BuildAssetBundles(
-                $"AssetBundle",
+                outputPath,
                 new[] { assetBundleBuild },
                 BuildAssetBundleOptions.None,
                 BuildTarget.StandaloneOSX

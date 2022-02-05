@@ -63,7 +63,7 @@ namespace Warp
             throw new Exception($"{key} {value.GetType().Name} is not {typeof(T).Name}");
         }
 
-        public static void Encode(string prefabFilePath)
+        public static GameObjectElement Encode(string prefabFilePath)
         {
             string text = System.IO.File.ReadAllText(prefabFilePath);
             var documents = SplitPrefabDocument(text);
@@ -133,19 +133,7 @@ namespace Warp
                 .Where(chunk => chunk.classID == 4 && chunk.properties["m_Father"]?.GetValueAsDictionary<string>("fileID") == "0")
                 .First();
 
-            var gameObjectElement = CreateGameObjectElement(rootTransform);
-            string json = JsonConvert.SerializeObject(gameObjectElement, Formatting.Indented);
-
-            Debug.Log(json);
-
-            Debug.Log("Create AssetBundles...");
-
-            AssetResolver.CreateDependantAssetBundles(gameObjectElement);
-
-            var jsonPath = prefabFilePath + ".json";
-            File.WriteAllText(jsonPath, json);
-
-            Debug.Log($"Save Prefab {prefabFilePath} to {jsonPath}");
+            return CreateGameObjectElement(rootTransform);
         }
 
         private static IDictionary<string, object> FixProperties(IDictionary<string, object> dict, Type classType)

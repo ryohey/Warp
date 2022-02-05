@@ -12,59 +12,12 @@ namespace Warp
 {
     public class Renderer
     {
-        private readonly AssetLoader assetLoader;
+        private readonly IAssetLoader assetLoader;
         private AssetLoader assetLoader1;
 
-        public Renderer(AssetLoader assetLoader)
+        public Renderer(IAssetLoader assetLoader)
         {
             this.assetLoader = assetLoader;
-        }
-
-        public RenderContext SpawnPrefab(string jsonPath, Transform parent = null)
-        {
-            var json = File.ReadAllText(jsonPath);
-            var gameObjectElement = JsonConvert.DeserializeObject<GameObjectElement>(json);
-
-            var context = new RenderContext();
-            Spawn(gameObjectElement, parent, context);
-            Update(gameObjectElement, context);
-
-            return context;
-        }
-
-        public void UpdatePrefab(string jsonPath, RenderContext context)
-        {
-            var json = File.ReadAllText(jsonPath);
-            var gameObjectElement = JsonConvert.DeserializeObject<GameObjectElement>(json);
-            Update(gameObjectElement, context);
-        }
-
-        public FileSystemWatcher WatchPrefab(string jsonPath, Transform parent = null)
-        {
-            var mainThreadContext = SynchronizationContext.Current;
-            var context = SpawnPrefab(jsonPath, parent);
-            var watcher = new FileSystemWatcher(Path.GetDirectoryName(jsonPath))
-            {
-                Filter = Path.GetFileName(jsonPath),
-                EnableRaisingEvents = true,
-            };
-            watcher.Changed += (sender, ev) =>
-            {
-                Debug.Log($"{ev.ChangeType}: {jsonPath}");
-
-                mainThreadContext.Post(__ =>
-                {
-                    try
-                    {
-                        UpdatePrefab(jsonPath, context);
-                    }
-                    catch (Exception e)
-                    {
-                        Debug.LogError(e.Message);
-                    }
-                }, null);
-            };
-            return watcher;
         }
 
         public void Spawn(GameObjectElement element, Transform parent, RenderContext context)
