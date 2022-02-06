@@ -67,6 +67,16 @@ namespace Warp
                 watcher = renderer.WatchPrefab(jsonPath);
             }
 
+            if (!WarpEditor.Instance.isEnabled && GUILayout.Button("Enable Convert on Save Prefab"))
+            {
+                WarpEditor.Instance.isEnabled = true;
+            }
+
+            if (WarpEditor.Instance.isEnabled && GUILayout.Button("Disable Convert on Save Prefab"))
+            {
+                WarpEditor.Instance.isEnabled = false;
+            }
+
             if (watcher != null && GUILayout.Button("Stop Synchronization"))
             {
                 watcher.Dispose();
