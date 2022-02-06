@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using Newtonsoft.Json;
@@ -13,14 +14,13 @@ namespace Warp
     public class Renderer
     {
         private readonly IAssetLoader assetLoader;
-        private AssetLoader assetLoader1;
 
         public Renderer(IAssetLoader assetLoader)
         {
             this.assetLoader = assetLoader;
         }
 
-        public void Spawn(GameObjectElement element, Transform parent, RenderContext context)
+        public GameObject Spawn(GameObjectElement element, Transform parent, RenderContext context)
         {
             var gameObject = new GameObject();
             context.objectMap[element.fileID] = gameObject.GetInstanceID();
@@ -32,29 +32,96 @@ namespace Warp
 
             foreach (var comp in element.components)
             {
-                var type = TypeUtils.GetUnityType(comp.typeName);
-                if (type == null)
-                {
-                    throw new Exception($"Failed to get type: {comp.typeName}");
-                }
-                var instance = type == typeof(Transform) ?
-                    gameObject.transform : gameObject.AddComponent(type);
-                if (instance == null)
-                {
-                    throw new Exception($"Failed to create instance: {comp.typeName}");
-                }
-                context.objectMap[comp.fileID] = instance.GetInstanceID();
+                SpawnComponent(gameObject, comp, context);
             }
 
             foreach (var child in element.children)
             {
                 Spawn(child, gameObject.transform, context);
             }
+
+            return gameObject;
+        }
+
+        private void SpawnComponent(GameObject gameObject, ComponentElement element, RenderContext context)
+        {
+            var type = TypeUtils.GetUnityType(element.typeName);
+            if (type == null)
+            {
+                throw new Exception($"Failed to get type: {element.typeName}");
+            }
+            var instance = type == typeof(Transform) ?
+                gameObject.transform : gameObject.AddComponent(type);
+            if (instance == null)
+            {
+                throw new Exception($"Failed to create instance: {element.typeName}");
+            }
+            context.objectMap[element.fileID] = instance.GetInstanceID();
+        }
+
+        private void DestroyExcessObjects(IEnumerable<UnityEngine.Object> objects, IEnumerable<IElement> elements, RenderContext context)
+        {
+            var existingObjects = elements
+                .Select(obj => context.FindObject(obj.FileID))
+                .Where(obj => obj != null)
+                .ToList();
+
+            objects.Except(existingObjects)
+                .ToList()
+                .ForEach(obj =>
+                {
+                    UnityEngine.Object.DestroyImmediate(obj);
+                });
+        }
+
+        public void Reconstruct(GameObjectElement element, Transform parent, RenderContext context)
+        {
+            var gameObject = context.FindObject(element.fileID) as GameObject;
+
+            if (gameObject == null)
+            {
+                Spawn(element, parent, context);
+                return;
+            }
+
+            var children = gameObject.transform
+                .Cast<Transform>()
+                .Select(t => t.gameObject)
+                .ToList();
+
+            DestroyExcessObjects(
+                children.Cast<UnityEngine.Object>(),
+                element.children.Cast<IElement>(),
+                context
+            );
+
+            var components = gameObject.GetComponents<Component>();
+
+            DestroyExcessObjects(
+                components.Cast<UnityEngine.Object>(),
+                element.components.Cast<IElement>(),
+                context
+            );
+
+            foreach (var comp in element.components)
+            {
+                if (context.FindObject(comp.fileID) != null)
+                {
+                    continue;
+                }
+                SpawnComponent(gameObject, comp, context);
+            }
+
+            foreach (var childElm in element.children)
+            {
+                Reconstruct(childElm, gameObject.transform, context);
+            }
         }
 
         public void Update(GameObjectElement element, RenderContext context)
         {
             var gameObject = context.FindObject(element.fileID);
+
             UpdateProperties(gameObject, element.properties);
 
             foreach (var comp in element.components)

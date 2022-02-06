@@ -13,7 +13,7 @@ namespace Warp
     {
         private RenderContext context;
         private FileSystemWatcher watcher;
-        private Renderer renderer = new Renderer(new AssetLoader("AssetBundle"));
+        private Renderer renderer = new Renderer(new AssetLoader("static"));
         private Server server;
 
         [MenuItem("Warp/Edit")]
@@ -25,15 +25,14 @@ namespace Warp
         void OnGUI()
         {
             var baseDir = Path.Combine(Path.GetDirectoryName(Application.dataPath), "static");
+            var prefabFilePath = @"Assets/Prefabs/GameObject.prefab";
+            var jsonPath = @"static/GameObject.prefab.json";
 
             if (GUILayout.Button("Convert prefab"))
             {
-                var prefabFilePath = @"Assets/Prefabs/GameObject.prefab";
                 var gameObjectElement = Encoder.Encode(prefabFilePath);
 
                 string json = JsonConvert.SerializeObject(gameObjectElement, Formatting.Indented);
-                Debug.Log(json);
-                var jsonPath = Path.Combine(baseDir, Path.GetFileName(prefabFilePath) + ".json");
                 File.WriteAllText(jsonPath, json);
                 Debug.Log($"Save Prefab {prefabFilePath} to {jsonPath}");
 
@@ -44,18 +43,27 @@ namespace Warp
 
             if (GUILayout.Button("Spawn prefab"))
             {
-                context = renderer.SpawnPrefab(@"Assets/Prefabs/GameObject.prefab.json");
+                var element = Decoder.Decode(jsonPath);
+                context = new RenderContext();
+                renderer.Spawn(element, null, context);
+                renderer.Update(element, context);
             }
 
-            if (GUILayout.Button("Update prefab") && context != null)
+            if (context != null && GUILayout.Button("Update prefab"))
             {
-                renderer.UpdatePrefab(@"Assets/Prefabs/GameObject.prefab.json", context);
+                var element = Decoder.Decode(jsonPath);
+                renderer.Update(element, context);
+            }
+
+            if (context != null && GUILayout.Button("Reconstruct prefab"))
+            {
+                var element = Decoder.Decode(jsonPath);
+                renderer.Reconstruct(element, null, context);
             }
 
             if (GUILayout.Button("Spawn and Synchronize"))
             {
                 watcher?.Dispose();
-                var jsonPath = @"Assets/Prefabs/GameObject.prefab.json";
                 watcher = renderer.WatchPrefab(jsonPath);
             }
 

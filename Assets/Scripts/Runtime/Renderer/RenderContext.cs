@@ -12,6 +12,10 @@ namespace Warp
 
         public UnityEngine.Object FindObject(string fileID)
         {
+            if (!objectMap.ContainsKey(fileID))
+            {
+                return null;
+            }
             var instanceID = objectMap[fileID];
             return FindGameObject(instanceID) as UnityEngine.Object ?? FindComponent(instanceID);
         }

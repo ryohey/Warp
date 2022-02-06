@@ -3,7 +3,10 @@ using System.Collections.Generic;
 
 namespace Warp
 {
-    public interface IElement { }
+    public interface IElement
+    {
+        public string FileID { get; }
+    }
 
     public struct GameObjectElement : IElement
     {
@@ -12,6 +15,8 @@ namespace Warp
         public IDictionary<string, object> properties;
         public IList<ComponentElement> components;
         public IList<GameObjectElement> children;
+
+        public string FileID { get => fileID; }
     }
 
     public struct ComponentElement : IElement
@@ -20,5 +25,7 @@ namespace Warp
         public int classID;
         public string fileID;
         public IDictionary<string, object> properties;
+
+        public string FileID { get => fileID; }
     }
 }
