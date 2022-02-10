@@ -44,7 +44,7 @@ namespace Warp
             return watcher;
         }
 
-        public static Timer WatchRemotePrefab(this Renderer self, string serverUrl, string prefabName, Transform parent = null)
+        public static Timer WatchRemotePrefab(this Renderer self, string serverUrl, string prefabName, Transform parent = null, int timerIntervalMs = 3000)
         {
             var mainThreadContext = SynchronizationContext.Current;
             RenderContext context = null;
@@ -82,7 +82,7 @@ namespace Warp
                 {
                     Debug.LogError(e.Message);
                 }
-            }, null, 0, 3000);
+            }, null, 0, timerIntervalMs);
 
             return timer;
         }

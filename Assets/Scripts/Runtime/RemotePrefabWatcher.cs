@@ -13,7 +13,7 @@ namespace Warp
         void Start()
         {
             var renderer = new Renderer(new RemoteAssetLoader(serverUrl));
-            timer = renderer.WatchRemotePrefab(serverUrl, prefabName, transform);
+            timer = renderer.WatchRemotePrefab(serverUrl, prefabName, transform, 500);
         }
 
         private void OnDestroy()
